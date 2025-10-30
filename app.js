@@ -1,22 +1,31 @@
 import express from "express";
+import cors from "cors";
+import { dbConnection } from "./src/config/database.js";
+import { setupAssociations } from "./src/models/index.js";
 
 const app = express();
 
-// Basic health check
+// Middleware
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Health check route
 app.get("/", (req, res) => {
-  res.send("🚀 API is running...");
+  res.json({ message: "DAS API Server is running!" });
 });
 
-// ✅ Database test route
-import sequelize from "./src/config/database.js";
-
-app.get("/test-db", async (req, res) => {
+// Initialize database and associations
+const initializeApp = async () => {
   try {
-    const [result] = await sequelize.query("SELECT NOW() AS time");
-    res.json({ success: true, dbTime: result[0].time });
+    await dbConnection();
+    setupAssociations();
+    console.log("✅ Database and models initialized successfully");
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error("❌ Failed to initialize application:", error);
+    process.exit(1);
   }
-});
+};
 
-export default app;
+// Export the app and initialization function
+export { app, initializeApp };

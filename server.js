@@ -1,16 +1,22 @@
-import dotenv from "dotenv";
-import app from "./app.js";
-import { dbConnection } from "./src/config/database.js";
+import { app, initializeApp } from "./app.js";
 
-dotenv.config();
 const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
-  await dbConnection();
+  try {
+    // Initialize database and models
+    await initializeApp();
 
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-  });
+    // Start server
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`📊 DAS Application started successfully`);
+    });
+  } catch (error) {
+    console.error("❌ Failed to start server:", error);
+    process.exit(1);
+  }
 };
 
+// Start the server
 startServer();
